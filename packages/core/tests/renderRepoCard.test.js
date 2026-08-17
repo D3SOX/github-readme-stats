@@ -1,10 +1,17 @@
 import { queryByTestId } from "@testing-library/dom";
 import { cssToObject } from "@uppercod/css-to-object";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import pinApi from "../src/api/pin.js";
 import { renderRepoCard } from "../src/cards/repo.js";
+import { fetchRepo } from "../src/fetchers/repo.js";
 import { themes } from "../src/themes/index.js";
+
+vi.mock("../src/fetchers/repo.js", () => ({
+  fetchRepo: vi.fn(),
+}));
+
+const fetchRepoMock = vi.mocked(fetchRepo);
 
 const data_repo = {
   repository: {
@@ -22,6 +29,12 @@ const data_repo = {
 };
 
 describe("Test renderRepoCard", () => {
+  it("should leave the default card unchanged when compact mode is disabled", () => {
+    expect(renderRepoCard(data_repo.repository, { compact: false })).toBe(
+      renderRepoCard(data_repo.repository),
+    );
+  });
+
   it("should render correctly", () => {
     document.body.innerHTML = renderRepoCard(data_repo.repository);
 
@@ -400,6 +413,84 @@ describe("Test renderRepoCard", () => {
     );
     expect(document.querySelector("svg")).toHaveAttribute("height", "120");
   });
+
+  it("should render an opt-in compact card with larger content and tighter padding", () => {
+    document.body.innerHTML = renderRepoCard(data_repo.repository, {
+      compact: true,
+      description_lines_count: 3,
+      theme: "radical",
+      title_color: "123456",
+    });
+
+    const svg = document.querySelector("svg");
+    const stylesObject = cssToObject(document.querySelector("style").innerHTML);
+
+    expect(svg).toHaveAttribute("width", "340");
+    expect(svg).toHaveAttribute("height", "140");
+    expect(queryByTestId(document.body, "card-title")).toHaveAttribute(
+      "transform",
+      "translate(18, 30)",
+    );
+    expect(document.querySelector(".description tspan")).toHaveAttribute(
+      "x",
+      "18",
+    );
+    expect(stylesObject[":host"][".header "]["font-size"].trim()).toBe("19px");
+    expect(document.querySelector("style").innerHTML).toContain(
+      "fill: #123456",
+    );
+    expect(queryByTestId(document.body, "card-bg")).toHaveAttribute(
+      "fill",
+      `#${themes.radical.bg_color}`,
+    );
+    expect(stylesObject[":host"][".description "].font.trim()).toContain(
+      "14px",
+    );
+    expect(stylesObject[":host"][".gray "].font.trim()).toContain("13px");
+    const starIcon = queryByTestId(document.body, "stargazers")
+      .closest("g")
+      .previousElementSibling.querySelector("svg");
+    expect(starIcon).toHaveAttribute("width", "18");
+    expect(
+      document.querySelector('g[transform^="translate(26, "]'),
+    ).not.toBeNull();
+
+    document.body.innerHTML = renderRepoCard(data_repo.repository, {
+      browser_rendering: true,
+      compact: true,
+      description_lines_count: 3,
+    });
+    expect(document.querySelector("foreignObject")).toHaveAttribute(
+      "width",
+      "294",
+    );
+  });
+
+  it("should keep compact three-line cards the same height", () => {
+    const longDescription =
+      "A tool that will make a lot of developers' lives easier by providing enough text to wrap across all available lines in the card.";
+
+    document.body.innerHTML = renderRepoCard(data_repo.repository, {
+      compact: true,
+      description_lines_count: 3,
+    });
+    expect(document.querySelector("svg")).toHaveAttribute("height", "140");
+
+    document.body.innerHTML = renderRepoCard(
+      { ...data_repo.repository, description: longDescription },
+      { compact: true, description_lines_count: 3 },
+    );
+    expect(document.querySelector("svg")).toHaveAttribute("height", "140");
+  });
+
+  it("should let card_width override the compact default width", () => {
+    document.body.innerHTML = renderRepoCard(data_repo.repository, {
+      compact: true,
+      card_width_input: 360,
+    });
+
+    expect(document.querySelector("svg")).toHaveAttribute("width", "360");
+  });
 });
 
 describe("test pin API", () => {
@@ -414,5 +505,20 @@ describe("test pin API", () => {
     expect(result.content).toContain(
       `Invalid color input for parameter &#34;title_color&#34;`,
     );
+  });
+
+  it("should parse compact=true", async () => {
+    fetchRepoMock.mockResolvedValue(data_repo.repository);
+
+    const result = await pinApi({
+      username: "anuraghazra",
+      repo: "convoychat",
+      compact: "true",
+      description_lines_count: "3",
+    });
+
+    expect(result.status).toBe("success");
+    expect(result.content).toContain('width="340"');
+    expect(result.content).toContain('height="140"');
   });
 });

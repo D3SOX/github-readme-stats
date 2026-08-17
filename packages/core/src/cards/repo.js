@@ -24,6 +24,13 @@ const X_OFFSET = 25;
 const DESCRIPTION_FONT_SIZE = 13;
 const DESCRIPTION_LINE_HEIGHT_PX = 16;
 const DESCRIPTION_MAX_LINES = 3;
+const COMPACT_CARD_WIDTH = 340;
+const COMPACT_X_OFFSET = 18;
+const COMPACT_DESCRIPTION_RIGHT_OFFSET = 28;
+const COMPACT_FOOTER_X_OFFSET = 26;
+const COMPACT_ICON_SIZE = 18;
+const COMPACT_DESCRIPTION_FONT_SIZE = 14;
+const COMPACT_DESCRIPTION_LINE_HEIGHT_PX = 17;
 
 /**
  * Retrieves the repository description and wraps it to fit the card width.
@@ -104,14 +111,25 @@ const renderRepoCard = (repo, options = {}) => {
     border_color,
     locale,
     description_lines_count,
+    compact = false,
   } = options;
 
   const card_width =
     card_width_input && !isNaN(card_width_input)
       ? card_width_input
-      : show.length >= 2
-        ? CARD_DEFAULT_WIDTH + 30
-        : CARD_DEFAULT_WIDTH;
+      : compact
+        ? COMPACT_CARD_WIDTH
+        : show.length >= 2
+          ? CARD_DEFAULT_WIDTH + 30
+          : CARD_DEFAULT_WIDTH;
+  const xOffset = compact ? COMPACT_X_OFFSET : X_OFFSET;
+  const iconSize = compact ? COMPACT_ICON_SIZE : ICON_SIZE;
+  const descriptionFontSize = compact
+    ? COMPACT_DESCRIPTION_FONT_SIZE
+    : DESCRIPTION_FONT_SIZE;
+  const descriptionLineHeight = compact
+    ? COMPACT_DESCRIPTION_LINE_HEIGHT_PX
+    : DESCRIPTION_LINE_HEIGHT_PX;
 
   const i18n = new I18n({
     locale,
@@ -191,7 +209,10 @@ const renderRepoCard = (repo, options = {}) => {
   const langName = (primaryLanguage && primaryLanguage.name) || "Unspecified";
   const langColor = (primaryLanguage && primaryLanguage.color) || "#333";
   const desc = parseEmojis(description || "No description provided");
-  const descriptionBoxWidth = card_width - 2 * X_OFFSET;
+  const descriptionBoxWidth =
+    card_width -
+    xOffset -
+    (compact ? COMPACT_DESCRIPTION_RIGHT_OFFSET : xOffset);
 
   let descriptionLinesCount, descriptionSvg;
   if (browser_rendering) {
@@ -203,16 +224,16 @@ const renderRepoCard = (repo, options = {}) => {
       ? clampValue(description_lines_count, 1, DESCRIPTION_MAX_LINES)
       : countWrappedLines(
           desc,
-          DESCRIPTION_FONT_SIZE,
+          descriptionFontSize,
           descriptionBoxWidth,
           DESCRIPTION_MAX_LINES,
         );
     descriptionSvg = wrappedTextNode({
       text: desc,
-      x: X_OFFSET,
+      x: xOffset,
       y: -3,
       width: descriptionBoxWidth,
-      height: descriptionLinesCount * DESCRIPTION_LINE_HEIGHT_PX + 10, // 10px extra for "descenders" like g, j, q, p, y
+      height: descriptionLinesCount * descriptionLineHeight + 10, // 10px extra for "descenders" like g, j, q, p, y
       lineCount: descriptionLinesCount,
       className: "description",
       testId: "description-text",
@@ -224,7 +245,7 @@ const renderRepoCard = (repo, options = {}) => {
     const multiLineDescription = wrapTextMultiline(
       desc,
       descriptionBoxWidth,
-      DESCRIPTION_FONT_SIZE,
+      descriptionFontSize,
       descriptionMaxLines,
     );
     descriptionLinesCount = description_lines_count
@@ -233,10 +254,10 @@ const renderRepoCard = (repo, options = {}) => {
     descriptionSvg = multiLineDescription
       .map(
         (line) =>
-          `<tspan dy="1.2em" x="${X_OFFSET}">${encodeHTML(line)}</tspan>`,
+          `<tspan dy="1.2em" x="${xOffset}">${encodeHTML(line)}</tspan>`,
       )
       .join("");
-    descriptionSvg = `<text class="description" x="${X_OFFSET}" y="-5"> 
+    descriptionSvg = `<text class="description" x="${xOffset}" y="-5">
       ${descriptionSvg}
     </text>`;
   }
@@ -244,10 +265,13 @@ const renderRepoCard = (repo, options = {}) => {
   const extraHeight = Object.keys(STATS).length
     ? -7 + (Math.ceil(statItems.length / 2) + 1) * extraLHeight
     : 0;
-  const height =
-    (descriptionLinesCount > 1 ? 120 : 110) +
-    descriptionLinesCount * lineHeight +
-    extraHeight;
+  const height = compact
+    ? (descriptionLinesCount > 1 ? 110 : 100) +
+      descriptionLinesCount * lineHeight +
+      extraHeight
+    : (descriptionLinesCount > 1 ? 120 : 110) +
+      descriptionLinesCount * lineHeight +
+      extraHeight;
 
   // returns theme based colors with proper overrides and defaults
   const colors = getCardColors({
@@ -269,23 +293,18 @@ const renderRepoCard = (repo, options = {}) => {
     icons.star,
     totalStars,
     "stargazers",
-    ICON_SIZE,
+    iconSize,
   );
-  const svgForks = iconWithLabel(
-    icons.fork,
-    totalForks,
-    "forkcount",
-    ICON_SIZE,
-  );
+  const svgForks = iconWithLabel(icons.fork, totalForks, "forkcount", iconSize);
 
   const starAndForkCount = flexLayout({
     items: [svgLanguage, svgStars, svgForks],
     sizes: [
-      measureText(langName, 12),
-      ICON_SIZE + measureText(`${totalStars}`, 12),
-      ICON_SIZE + measureText(`${totalForks}`, 12),
+      measureText(langName, compact ? 13 : 12),
+      iconSize + measureText(`${totalStars}`, compact ? 13 : 12),
+      iconSize + measureText(`${totalForks}`, compact ? 13 : 12),
     ],
-    gap: 25,
+    gap: compact ? 18 : 25,
   }).join("");
 
   let extraRows = [];
@@ -293,7 +312,7 @@ const renderRepoCard = (repo, options = {}) => {
     extraRows.push(
       flexLayout({
         items: statItems.slice(i, i + 2),
-        gap: 210,
+        gap: compact ? 155 : 210,
         direction: "row",
       }).join(""),
     );
@@ -309,7 +328,10 @@ const renderRepoCard = (repo, options = {}) => {
     `;
 
   const card = new Card({
-    defaultTitle: header.length > 35 ? `${header.slice(0, 35)}...` : header,
+    defaultTitle:
+      header.length > (compact ? 27 : 35)
+        ? `${header.slice(0, compact ? 27 : 35)}...`
+        : header,
     titlePrefixIcon: icons.contribs,
     width: card_width,
     height,
@@ -318,18 +340,23 @@ const renderRepoCard = (repo, options = {}) => {
   });
 
   card.disableAnimations();
+  if (compact) {
+    card.paddingX = COMPACT_X_OFFSET;
+    card.paddingY = 30;
+  }
   card.setHideBorder(hide_border);
   card.setHideTitle(false);
   card.setCSS(`
     .description {
-      font: 400 ${DESCRIPTION_FONT_SIZE}px 'Segoe UI', Ubuntu, Sans-Serif;fill: ${colors.textColor};
+      font: 400 ${descriptionFontSize}px 'Segoe UI', Ubuntu, Sans-Serif;fill: ${colors.textColor};
       ${browser_rendering ? wrappedTextStyles(colors.textColor) : ""}
     }
-    .gray { font: 400 12px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${colors.textColor} }
-    .badge { font: 600 11px 'Segoe UI', Ubuntu, Sans-Serif; }
+    .gray { font: 400 ${compact ? 13 : 12}px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${colors.textColor} }
+    .badge { font: 600 ${compact ? 12 : 11}px 'Segoe UI', Ubuntu, Sans-Serif; }
     .badge rect { opacity: 0.2 }
 
-    .stat { font: 400 12px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${colors.textColor} }
+    .stat { font: 400 ${compact ? 13 : 12}px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${colors.textColor} }
+    ${compact ? ".header { font-size: 19px; }" : ""}
     .stagger {
       opacity: 0;
       animation: fadeInAnimation 0.3s ease-in-out forwards;
@@ -363,7 +390,7 @@ const renderRepoCard = (repo, options = {}) => {
 
     ${descriptionSvg}
 
-    <g transform="translate(30, ${height - 75 - extraHeight})">
+    <g transform="translate(${compact ? COMPACT_FOOTER_X_OFFSET : 30}, ${height - 75 - extraHeight})">
       ${starAndForkCount}
     </g>
     ${extraItems}

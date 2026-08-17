@@ -36,6 +36,7 @@ export type RepoCardOptions = CommonOptions & {
   show_owner: boolean;
   browser_rendering: boolean;
   description_lines_count: number;
+  compact: boolean;
   card_width_input;
   show: Array<string>;
   show_icons: boolean;

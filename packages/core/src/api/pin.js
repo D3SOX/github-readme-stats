@@ -32,6 +32,7 @@ export default async (
     border_radius,
     border_color,
     description_lines_count,
+    compact,
   },
   pat = null,
 ) => {
@@ -125,6 +126,7 @@ export default async (
         username,
         locale: locale ? locale.toLowerCase() : null,
         description_lines_count,
+        compact: parseBoolean(compact),
       }),
     };
   } catch (err) {

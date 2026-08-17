@@ -317,6 +317,7 @@ You can customize the appearance and behavior of the pinned repository card usin
 | `show_owner` | Shows the repo's owner name. | boolean | `false` |
 | `browser_rendering` | Compute text wrapping of repository description natively in the browser, instead of computing it server-side. | boolean | `false` |
 | `description_lines_count` | Manually set the number of lines for the description. Specified value will be clamped between 1 and 3. If this parameter is not specified, the number of lines will be automatically adjusted according to the actual length of the description. | number | `null` |
+| `compact` | Uses a narrower card with larger content and tighter padding, optimized for two-column layouts. | boolean | `false` |
 | `card_width` | Sets the card's width manually. | number | `400px  (approx.)` |
 | `show_icons` | Shows icons near all stats enabled via `show`. | boolean | `true` |
 | `line_height` | Sets the line height between stats enabled via `show`. | integer | `22` |
@@ -717,4 +718,3 @@ By default, GitHub does not lay out the cards side by side. To do that, you can 
 </a>
 
 </details>
-
