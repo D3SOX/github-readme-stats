@@ -1,6 +1,6 @@
 version: "1"
 rules:
-  - base: main
-    upstream: anuraghazra:main
-    mergeMethod: hardreset
+  - base: master
+    upstream: stats-organization:release
+    mergeMethod: merge
     mergeUnstable: true
