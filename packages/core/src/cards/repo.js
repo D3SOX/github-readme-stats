@@ -28,6 +28,8 @@ const COMPACT_CARD_WIDTH = 340;
 const COMPACT_X_OFFSET = 18;
 const COMPACT_DESCRIPTION_RIGHT_OFFSET = 28;
 const COMPACT_FOOTER_X_OFFSET = 26;
+const LANGUAGE_TEXT_X_OFFSET = 15;
+const ICON_LABEL_X_OFFSET = 20;
 const COMPACT_ICON_SIZE = 18;
 const COMPACT_DESCRIPTION_FONT_SIZE = 14;
 const COMPACT_DESCRIPTION_LINE_HEIGHT_PX = 17;
@@ -265,10 +267,13 @@ const renderRepoCard = (repo, options = {}) => {
   const extraHeight = Object.keys(STATS).length
     ? -7 + (Math.ceil(statItems.length / 2) + 1) * extraLHeight
     : 0;
+  const compactThreeLineSpacing =
+    compact && descriptionLinesCount === DESCRIPTION_MAX_LINES ? 10 : 0;
   const height = compact
     ? (descriptionLinesCount > 1 ? 110 : 100) +
       descriptionLinesCount * lineHeight +
-      extraHeight
+      extraHeight +
+      compactThreeLineSpacing
     : (descriptionLinesCount > 1 ? 120 : 110) +
       descriptionLinesCount * lineHeight +
       extraHeight;
@@ -297,13 +302,41 @@ const renderRepoCard = (repo, options = {}) => {
   );
   const svgForks = iconWithLabel(icons.fork, totalForks, "forkcount", iconSize);
 
+  const metadataFontSize = compact ? 13 : 12;
+  const metadataItems = compact
+    ? [
+        {
+          svg: svgLanguage,
+          size:
+            LANGUAGE_TEXT_X_OFFSET + measureText(langName, metadataFontSize),
+        },
+        {
+          svg: svgStars,
+          size:
+            ICON_LABEL_X_OFFSET +
+            measureText(`${totalStars}`, metadataFontSize),
+        },
+        {
+          svg: svgForks,
+          size:
+            ICON_LABEL_X_OFFSET +
+            measureText(`${totalForks}`, metadataFontSize),
+        },
+      ].filter(({ svg }) => svg)
+    : [
+        { svg: svgLanguage, size: measureText(langName, metadataFontSize) },
+        {
+          svg: svgStars,
+          size: iconSize + measureText(`${totalStars}`, metadataFontSize),
+        },
+        {
+          svg: svgForks,
+          size: iconSize + measureText(`${totalForks}`, metadataFontSize),
+        },
+      ];
   const starAndForkCount = flexLayout({
-    items: [svgLanguage, svgStars, svgForks],
-    sizes: [
-      measureText(langName, compact ? 13 : 12),
-      iconSize + measureText(`${totalStars}`, compact ? 13 : 12),
-      iconSize + measureText(`${totalForks}`, compact ? 13 : 12),
-    ],
+    items: metadataItems.map(({ svg }) => svg),
+    sizes: metadataItems.map(({ size }) => size),
     gap: compact ? 18 : 25,
   }).join("");
 

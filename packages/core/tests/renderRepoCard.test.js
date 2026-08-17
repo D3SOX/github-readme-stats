@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import pinApi from "../src/api/pin.js";
 import { renderRepoCard } from "../src/cards/repo.js";
+import { measureText } from "../src/common/render.js";
 import { fetchRepo } from "../src/fetchers/repo.js";
 import { themes } from "../src/themes/index.js";
 
@@ -426,7 +427,7 @@ describe("Test renderRepoCard", () => {
     const stylesObject = cssToObject(document.querySelector("style").innerHTML);
 
     expect(svg).toHaveAttribute("width", "340");
-    expect(svg).toHaveAttribute("height", "140");
+    expect(svg).toHaveAttribute("height", "150");
     expect(queryByTestId(document.body, "card-title")).toHaveAttribute(
       "transform",
       "translate(18, 30)",
@@ -451,9 +452,19 @@ describe("Test renderRepoCard", () => {
       .closest("g")
       .previousElementSibling.querySelector("svg");
     expect(starIcon).toHaveAttribute("width", "18");
+    const footer = document.querySelector('g[transform="translate(26, 75)"]');
+    const detailGroups = [...footer.children];
+    const getTranslateX = (element) =>
+      Number(element.getAttribute("transform").match(/translate\(([^,]+)/)[1]);
+
+    expect(detailGroups).toHaveLength(3);
     expect(
-      document.querySelector('g[transform^="translate(26, "]'),
-    ).not.toBeNull();
+      getTranslateX(detailGroups[1]) - (15 + measureText("TypeScript", 13)),
+    ).toBe(18);
+    expect(
+      getTranslateX(detailGroups[2]) -
+        (getTranslateX(detailGroups[1]) + 20 + measureText("38k", 13)),
+    ).toBe(18);
 
     document.body.innerHTML = renderRepoCard(data_repo.repository, {
       browser_rendering: true,
@@ -474,13 +485,30 @@ describe("Test renderRepoCard", () => {
       compact: true,
       description_lines_count: 3,
     });
-    expect(document.querySelector("svg")).toHaveAttribute("height", "140");
+    expect(document.querySelector("svg")).toHaveAttribute("height", "150");
 
     document.body.innerHTML = renderRepoCard(
       { ...data_repo.repository, description: longDescription },
       { compact: true, description_lines_count: 3 },
     );
-    expect(document.querySelector("svg")).toHaveAttribute("height", "140");
+    expect(document.querySelector("svg")).toHaveAttribute("height", "150");
+  });
+
+  it("should space compact details consistently without a language", () => {
+    document.body.innerHTML = renderRepoCard(
+      { ...data_repo.repository, primaryLanguage: null },
+      { compact: true },
+    );
+
+    const footer = document.querySelector('g[transform^="translate(26, "]');
+    const detailGroups = [...footer.children];
+
+    expect(detailGroups).toHaveLength(2);
+    expect(detailGroups[0]).toHaveAttribute("transform", "translate(0, 0)");
+    expect(detailGroups[1]).toHaveAttribute(
+      "transform",
+      `translate(${20 + measureText("38k", 13) + 18}, 0)`,
+    );
   });
 
   it("should let card_width override the compact default width", () => {
@@ -519,6 +547,6 @@ describe("test pin API", () => {
 
     expect(result.status).toBe("success");
     expect(result.content).toContain('width="340"');
-    expect(result.content).toContain('height="140"');
+    expect(result.content).toContain('height="150"');
   });
 });
