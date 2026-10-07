@@ -1,7 +1,8 @@
 import { renderWakatimeCard } from "../cards/wakatime.js";
-import { findInvalidColor } from "../common/color.js";
+import { findInvalidColorParam, pickColorParams } from "../common/color.js";
 import {
   MissingParamError,
+  describeError,
   retrieveSecondaryMessage,
 } from "../common/error.js";
 import { parseArray, parseBoolean } from "../common/ops.js";
@@ -12,14 +13,9 @@ import { isLocaleAvailable } from "../translations.js";
 // @ts-ignore
 export default async ({
   username,
-  title_color,
-  icon_color,
   hide_border,
   card_width,
   line_height,
-  text_color,
-  bg_color,
-  theme,
   hide_title,
   hide_progress,
   custom_title,
@@ -29,17 +25,13 @@ export default async ({
   hide,
   api_domain,
   border_radius,
-  border_color,
   display_format,
   disable_animations,
+  ...remainingParams
 }) => {
-  const invalidColorInput = findInvalidColor({
-    title_color,
-    icon_color,
-    text_color,
-    bg_color,
-    border_color,
-  });
+  const colorParams = pickColorParams(remainingParams);
+
+  const invalidColorInput = findInvalidColorParam(colorParams);
   if (invalidColorInput) {
     return {
       status: "error - permanent",
@@ -56,13 +48,7 @@ export default async ({
       content: renderError({
         message: "Something went wrong",
         secondaryMessage: "Language not found",
-        renderOptions: {
-          title_color,
-          text_color,
-          bg_color,
-          border_color,
-          theme,
-        },
+        renderOptions: colorParams,
       }),
     };
   }
@@ -74,13 +60,7 @@ export default async ({
       content: renderError({
         message: "Something went wrong",
         secondaryMessage: "Username contains unsafe characters",
-        renderOptions: {
-          title_color,
-          text_color,
-          bg_color,
-          border_color,
-          theme,
-        },
+        renderOptions: colorParams,
       }),
     };
   }
@@ -91,20 +71,15 @@ export default async ({
     return {
       status: "success",
       content: renderWakatimeCard(stats, {
+        ...colorParams,
         custom_title,
         hide_title: parseBoolean(hide_title),
         hide_border: parseBoolean(hide_border),
         card_width: parseInt(card_width, 10),
         hide: parseArray(hide),
         line_height,
-        title_color,
-        icon_color,
-        text_color,
-        bg_color,
-        theme,
-        hide_progress,
+        hide_progress: parseBoolean(hide_progress),
         border_radius,
-        border_color,
         locale: locale ? locale.toLowerCase() : null,
         layout,
         langs_count,
@@ -116,15 +91,12 @@ export default async ({
     if (err instanceof Error) {
       return {
         status: "error - temporary",
+        error: describeError(err),
         content: renderError({
           message: err.message,
           secondaryMessage: retrieveSecondaryMessage(err),
           renderOptions: {
-            title_color,
-            text_color,
-            bg_color,
-            border_color,
-            theme,
+            ...colorParams,
             show_repo_link: !(err instanceof MissingParamError),
           },
         }),
@@ -134,13 +106,7 @@ export default async ({
       status: "error - temporary",
       content: renderError({
         message: "An unknown error occurred",
-        renderOptions: {
-          title_color,
-          text_color,
-          bg_color,
-          border_color,
-          theme,
-        },
+        renderOptions: colorParams,
       }),
     };
   }

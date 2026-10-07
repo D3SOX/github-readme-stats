@@ -1,15 +1,19 @@
 import toEmoji from "emoji-name-map";
 
+import type { RepositoryAffiliation } from "../graphql/generated/common.js";
+
 import { OWNER_AFFILIATIONS } from "./constants.js";
 import { CustomError } from "./error.js";
 
 /**
  * Returns boolean if value is either "true" or "false" else the value as it is.
  *
- * @param value The value to parse.
+ * @param value The value to parse; `undefined` when the param was not sent.
  * @returns The parsed value.
  */
-const parseBoolean = (value: string | boolean): boolean | undefined => {
+const parseBoolean = (
+  value: string | boolean | undefined,
+): boolean | undefined => {
   if (typeof value === "boolean") {
     return value;
   }
@@ -97,19 +101,8 @@ const parseEmojis = (str: string): string => {
   });
 };
 
-/**
- * Get diff in minutes between two dates.
- *
- * @param d1 First date.
- * @param d2 Second date.
- * @returns Number of minutes between the two dates.
- */
-const dateDiff = (d1: Date, d2: Date): number => {
-  const date1 = new Date(d1);
-  const date2 = new Date(d2);
-  const diff = date1.getTime() - date2.getTime();
-  return Math.round(diff / (1000 * 60));
-};
+const isOwnerAffiliation = (value: string): value is RepositoryAffiliation =>
+  OWNER_AFFILIATIONS.some((affiliation) => affiliation === value);
 
 /**
  * Parse owner affiliations.
@@ -119,7 +112,9 @@ const dateDiff = (d1: Date, d2: Date): number => {
  *
  * @throws {CustomError} If affiliations contains invalid values.
  */
-const parseOwnerAffiliations = (affiliations: Array<string>): Array<string> => {
+const parseOwnerAffiliations = (
+  affiliations: Array<string>,
+): Array<RepositoryAffiliation> => {
   // Set default value for ownerAffiliations.
   // NOTE: Done here since parseArray() will always return an empty array even nothing
   //was specified.
@@ -129,9 +124,7 @@ const parseOwnerAffiliations = (affiliations: Array<string>): Array<string> => {
       : ["OWNER"];
 
   // Check if ownerAffiliations contains valid values.
-  if (
-    normalized.some((affiliation) => !OWNER_AFFILIATIONS.includes(affiliation))
-  ) {
+  if (!normalized.every(isOwnerAffiliation)) {
     throw new CustomError(
       "Invalid query parameter",
       CustomError.INVALID_AFFILIATION,
@@ -162,7 +155,6 @@ export {
   lowercaseTrim,
   chunkArray,
   parseEmojis,
-  dateDiff,
   parseOwnerAffiliations,
   buildSearchFilter,
 };

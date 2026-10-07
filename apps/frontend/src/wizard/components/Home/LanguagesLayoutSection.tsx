@@ -1,0 +1,72 @@
+import { useId } from "react";
+import type { JSX } from "react";
+
+import { Select } from "../Generic/Select";
+import type { SelectOption } from "../Generic/Select";
+
+import { Section } from "./Section";
+
+export const DEFAULT_OPTION: SelectOption = {
+  id: 1,
+  label: "Normal",
+  disabled: false,
+  value: "normal",
+};
+
+const options: Array<SelectOption> = [
+  DEFAULT_OPTION,
+  {
+    id: 2,
+    label: "Compact",
+    disabled: false,
+    value: "compact",
+  },
+  {
+    id: 3,
+    label: "Donut",
+    disabled: false,
+    value: "donut",
+  },
+  {
+    id: 4,
+    label: "Vertical Donut",
+    disabled: false,
+    value: "donut-vertical",
+  },
+  {
+    id: 5,
+    label: "Pie",
+    disabled: false,
+    value: "pie",
+  },
+  {
+    id: 6,
+    label: "Only Languages",
+    disabled: false,
+    value: "hide_progress",
+  },
+];
+
+interface LanguagesLayoutSectionProps {
+  selectedLanguageLayoutOption: SelectOption;
+  onLanguageLayoutOptionChange: (option: SelectOption) => void;
+}
+
+export function LanguagesLayoutSection({
+  selectedLanguageLayoutOption,
+  onLanguageLayoutOptionChange,
+}: LanguagesLayoutSectionProps): JSX.Element {
+  const titleId = useId();
+
+  return (
+    <Section title="Card Layout" titleId={titleId}>
+      <p>Select a card layout.</p>
+      <Select
+        aria-labelledby={titleId}
+        options={options}
+        selectedOption={selectedLanguageLayoutOption}
+        onOptionChange={onLanguageLayoutOptionChange}
+      />
+    </Section>
+  );
+}

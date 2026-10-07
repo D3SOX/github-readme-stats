@@ -1,7 +1,8 @@
 import { renderRepoCard } from "../cards/repo.js";
-import { findInvalidColor } from "../common/color.js";
+import { findInvalidColorParam, pickColorParams } from "../common/color.js";
 import {
   MissingParamError,
+  describeError,
   retrieveSecondaryMessage,
 } from "../common/error.js";
 import { parseArray, parseBoolean } from "../common/ops.js";
@@ -15,12 +16,7 @@ export default async (
     username,
     repo,
     hide_border,
-    title_color,
-    icon_color,
-    text_color,
-    bg_color,
     card_width,
-    theme,
     show_owner,
     browser_rendering,
     show,
@@ -30,19 +26,15 @@ export default async (
     line_height,
     locale,
     border_radius,
-    border_color,
     description_lines_count,
     compact,
+    ...remainingParams
   },
   pat = null,
 ) => {
-  const invalidColorInput = findInvalidColor({
-    title_color,
-    icon_color,
-    text_color,
-    bg_color,
-    border_color,
-  });
+  const colorParams = pickColorParams(remainingParams);
+
+  const invalidColorInput = findInvalidColorParam(colorParams);
   if (invalidColorInput) {
     return {
       status: "error - permanent",
@@ -59,13 +51,7 @@ export default async (
       content: renderError({
         message: "Something went wrong",
         secondaryMessage: "Language not found",
-        renderOptions: {
-          title_color,
-          text_color,
-          bg_color,
-          border_color,
-          theme,
-        },
+        renderOptions: colorParams,
       }),
     };
   }
@@ -80,13 +66,7 @@ export default async (
       content: renderError({
         message: "Something went wrong",
         secondaryMessage: "Username or repository contains unsafe characters",
-        renderOptions: {
-          title_color,
-          text_color,
-          bg_color,
-          border_color,
-          theme,
-        },
+        renderOptions: colorParams,
       }),
     };
   }
@@ -107,14 +87,9 @@ export default async (
     return {
       status: "success",
       content: renderRepoCard(repoData, {
+        ...colorParams,
         hide_border: parseBoolean(hide_border),
-        title_color,
-        icon_color,
-        text_color,
-        bg_color,
-        theme,
         border_radius,
-        border_color,
         card_width_input: parseInt(card_width, 10),
         show_owner: parseBoolean(show_owner),
         browser_rendering: parseBoolean(browser_rendering),
@@ -133,15 +108,12 @@ export default async (
     if (err instanceof Error) {
       return {
         status: "error - temporary",
+        error: describeError(err),
         content: renderError({
           message: err.message,
           secondaryMessage: retrieveSecondaryMessage(err),
           renderOptions: {
-            title_color,
-            text_color,
-            bg_color,
-            border_color,
-            theme,
+            ...colorParams,
             show_repo_link: !(err instanceof MissingParamError),
           },
         }),
@@ -151,13 +123,7 @@ export default async (
       status: "error - temporary",
       content: renderError({
         message: "An unknown error occurred",
-        renderOptions: {
-          title_color,
-          text_color,
-          bg_color,
-          border_color,
-          theme,
-        },
+        renderOptions: colorParams,
       }),
     };
   }
