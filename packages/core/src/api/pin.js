@@ -27,6 +27,7 @@ export default async (
     locale,
     border_radius,
     description_lines_count,
+    compact,
     ...remainingParams
   },
   pat = null,
@@ -100,6 +101,7 @@ export default async (
         username,
         locale: locale ? locale.toLowerCase() : null,
         description_lines_count,
+        compact: parseBoolean(compact),
       }),
     };
   } catch (err) {
