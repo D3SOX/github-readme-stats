@@ -7,11 +7,12 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 mkdir -p apps/backend/.vercel/output/functions/api.func/
-# copying `backend` to `backend/.vercel/...` directly may cause problems
-cp -RP apps/backend/. apps/backend-copy/
+# Copy the portable production deployment, including its self-contained dependencies.
+cp -RP apps/deployment/. apps/backend-copy/
 # `shopt` includes dot-files in the `mv` operation
 (shopt -s dotglob && mv apps/backend-copy/* apps/backend/.vercel/output/functions/api.func/)
 cp -RP apps/backend/.vercel/output/functions/api.func/_dot_vercel_copy/output apps/backend/.vercel/
+node --input-type=module -e 'await import("./apps/backend/.vercel/output/functions/api.func/app.js")'
 rm -rf apps/deployment
 pnpm install
 pnpm build:frontend
