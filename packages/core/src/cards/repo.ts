@@ -38,6 +38,7 @@ const COMPACT_DESCRIPTION_LINE_HEIGHT_PX = 17;
 
 interface RepoCardOptions extends CommonCardOptions {
   locale: string;
+  disable_animations: boolean;
   show_owner: boolean;
   browser_rendering: boolean;
   description_lines_count: number;
@@ -129,6 +130,7 @@ const renderRepoCard = (
     locale,
     description_lines_count,
     compact = false,
+    disable_animations = true,
   } = options;
 
   const card_width =
@@ -380,7 +382,9 @@ const renderRepoCard = (
     colors: { light: lightColors, dark: darkColors },
   });
 
-  card.disableAnimations();
+  if (disable_animations) {
+    card.disableAnimations();
+  }
   if (compact) {
     card.paddingX = COMPACT_X_OFFSET;
     card.paddingY = 30;
