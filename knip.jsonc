@@ -9,7 +9,9 @@
       "ignore": ["src/graphql/generated/**"]
     },
     "apps/backend": {
-      "entry": ["api/*.js", "scripts/*.js"]
+      "entry": ["api/*.js", "scripts/*.js"],
+      // the Vercel function handler loads app.js through its default export
+      "ignoreIssues": { "app.js": ["exports", "duplicates"] }
     },
     "apps/frontend": {
       "entry": ["src/wakatime-override.ts"],
