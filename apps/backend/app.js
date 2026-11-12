@@ -25,3 +25,5 @@ app.use((req, res) => {
   }
   return router(req, res);
 });
+
+export default app;

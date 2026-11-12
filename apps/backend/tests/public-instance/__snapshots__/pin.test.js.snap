@@ -149,7 +149,7 @@ exports[`Test /api/pin contract > should match the public archived-repo response
     </g>
   
 
-    <text class="description" x="25" y="-5"> 
+    <text class="description" x="25" y="-5">
       <tspan dy="1.2em" x="25">Help us take over the world with a deeply customizable</tspan><tspan dy="1.2em" x="25">React, TypeScript and GraphQL chat app that has enough</tspan><tspan dy="1.2em" x="25">text to wrap across multiple lines in the repository card.</tspan>
     </text>
 
@@ -304,7 +304,7 @@ exports[`Test /api/pin contract > should match the public happy-path response sn
           
     
 
-    <text class="description" x="25" y="-5"> 
+    <text class="description" x="25" y="-5">
       <tspan dy="1.2em" x="25">Help us take over the world with a deeply customizable</tspan><tspan dy="1.2em" x="25">React, TypeScript and GraphQL chat app that has enough</tspan><tspan dy="1.2em" x="25">text to wrap across multiple lines in the repository card.</tspan>
     </text>
 
@@ -446,7 +446,7 @@ exports[`Test /api/pin contract > should match the public many-params response s
           
     
 
-    <text class="description" x="25" y="-5"> 
+    <text class="description" x="25" y="-5">
       <tspan dy="1.2em" x="25">Help us take over the world with a deeply customizable React, TypeScript and GraphQL...</tspan>
     </text>
 

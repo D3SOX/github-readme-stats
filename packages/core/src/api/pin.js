@@ -27,6 +27,7 @@ export default async (
     locale,
     border_radius,
     description_lines_count,
+    compact,
     disable_animations,
     ...remainingParams
   },
@@ -101,6 +102,7 @@ export default async (
         username,
         locale: locale ? locale.toLowerCase() : null,
         description_lines_count,
+        compact: parseBoolean(compact),
         disable_animations: parseBoolean(disable_animations),
       }),
     };

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd ../../ && pnpm run build:packages && pnpm --filter ./apps/backend/ --legacy --prod deploy ./apps/deployment/ && ./vercel-preparation.sh",
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/frontend/docs/"
+    }
+  ]
+}

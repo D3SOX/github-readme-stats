@@ -1,0 +1,9 @@
+.github
+.husky
+benchmarks
+coverage
+scripts
+tests
+.env
+**/*.svg
+codecov.yml

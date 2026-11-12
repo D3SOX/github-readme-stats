@@ -1,0 +1,5 @@
+{
+  "runtime": "nodejs24.x",
+  "handler": "app.js",
+  "launcherType": "Nodejs"
+}
